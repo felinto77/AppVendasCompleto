@@ -1,73 +1,97 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
 
-
-
-// const categories = [
-//   { id: 1, name: 'Bebidas', icon: '🥤' },
-//   { id: 2, name: 'Snacks', icon: '🍿' },
-//   { id: 3, name: 'Cafés', icon: '☕' },
-//   { id: 4, name: 'Biscoitos', icon: '🍪' },
-//   { id: 5, name: 'Chocolates', icon: '🍫' },
-//   { id: 6, name: 'Orgânicos', icon: '🌱' },
-//   { id: 7, name: 'Importados', icon: '🌎' },
-//   { id: 8, name: 'Promoções', icon: '🏷️' },
-// ];
-
 type Category = {
-  id: number,
-  name: string,
-  icon: string
+  id: number;
+  name: string;
+  icon: string;
+}
+
+type Product = {
+  id: number;
+  name: string;
+  price: number;
+  category_id: number;
 }
 
 const CategoriesScreen = ({ onBack }: { onBack: () => void }) => {
-
   const [categories, setCategories] = useState<Category[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    
-    listarcategorias();
-    
+    const fetchData = async () => {
+      try {
+        // Busca categorias e produtos em paralelo
+        const [categoriesRes, productsRes] = await Promise.all([
+          fetch('http://192.168.8.91:14000/AppVendasApi/public/api/categories'),
+          fetch('http://192.168.8.91:14000/AppVendasApi/public/api/products')
+        ]);
+        
+        const categoriesJson = await categoriesRes.json();
+        const productsJson = await productsRes.json();
+        
+        setCategories(categoriesJson);
+        setProducts(productsJson);
+      } catch(error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, []);
 
-  async function listarcategorias() {
-    try {
-      const response = await fetch(
-        'http://192.168.8.91:14000/AppVendasApi/public/api/categories',
-      );
-      const json = await response.json();
-      setCategories(json);
-    } catch(error) {
-      console.error(error)
-    }
-  };
+  // Agrupa produtos por categoria
+  const productsByCategory = categories.map(category => ({
+    ...category,
+    products: products.filter(product => product.category_id === category.id)
+  }));
 
-  console.log(categories);
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <Text>Carregando...</Text>
+      </View>
+    );
+  }
 
   return (
     <ScrollView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-      <Link href="/(tabs)/homescreen" asChild>
-    <TouchableOpacity style={styles.backButtonContainer}>
-      <Text style={styles.backButtonText}>← Voltar</Text>
-    </TouchableOpacity>
-  </Link>
+        <Link href="/(tabs)/homescreen" asChild>
+          <TouchableOpacity style={styles.backButtonContainer}>
+            <Text style={styles.backButtonText}>← Voltar</Text>
+          </TouchableOpacity>
+        </Link>
         <Text style={styles.title}>Categorias</Text>
       </View>
 
       {/* Lista de categorias */}
       <View style={styles.grid}>
-        {categories.map((category) => (
-          <TouchableOpacity 
+        {productsByCategory.map((category) => (
+          <Link 
             key={category.id} 
-            style={styles.categoryCard}
-            onPress={() => console.log('Categoria selecionada:', category.name)}
+            href={{
+              pathname: "/CategoryProducts",
+              params: { 
+                categoryId: category.id,
+                categoryName: category.name
+              }
+            }} 
+            asChild
           >
-            <Text style={styles.categoryIcon}>{category.icon}</Text>
-            <Text style={styles.categoryName}>{category.name}</Text>
-          </TouchableOpacity>
+            <TouchableOpacity style={styles.categoryCard}>
+              <Text style={styles.categoryIcon}>{category.icon}</Text>
+              <Text style={styles.categoryName}>{category.name}</Text>
+              <Text style={styles.productCount}>
+                {category.products.length} {category.products.length === 1 ? 'produto' : 'produtos'}
+              </Text>
+            </TouchableOpacity>
+          </Link>
         ))}
       </View>
     </ScrollView>
@@ -118,13 +142,11 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#34495e',
     textAlign: 'center',
+    marginBottom: 5,
   },
-  button: {
-    flex: 1,
-    padding: 15,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
+  productCount: {
+    fontSize: 14,
+    color: '#7f8c8d',
   },
   backButtonContainer: {
     padding: 8, 
@@ -133,7 +155,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#007AFF', 
   },
-
 });
 
 export default CategoriesScreen;
