@@ -34,6 +34,15 @@ export default function TabLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+              name="estoque"
+              options={{ headerShown: false,
+                title: 'Estoque',
+                tabBarIcon: ({ color, focused }) => (
+                  <Ionicons name={focused ? 'cart-sharp' : 'cart-outline'} color={color} size={24} />
+                ),
+              }}
+            />
     </Tabs>
   );
 }
