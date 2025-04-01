@@ -1,30 +1,60 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
-import { Link } from 'expo-router';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 
 type Product = {
   id: number;
   name: string;
-  price: number;
+  price?: number; 
   category_id: number;
+  brand_id?: number;
 }
 
 const CategoryProductsScreen = () => {
   const { categoryId, categoryName } = useLocalSearchParams();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
+        setLoading(true);
         const response = await fetch(
-          `http://192.168.8.91:14000/AppVendasApi/public/api/products?category_id=${categoryId}`
+          `http://192.168.8.91:14000/AppVendasApi/public/api/products`
         );
-        const json = await response.json();
-        setProducts(json);
+        let productsJson = await response.json();
+
+        // Debug: Verificar estrutura dos dados
+        console.log('Dados recebidos:', productsJson);
+
+        // Se os produtos vierem dentro de marcas
+        if (productsJson[0]?.products) {
+          productsJson = productsJson.flatMap((brand: any) => 
+            brand.products.map((product: any) => ({
+              ...product,
+              brand_id: brand.id,
+              // Garantir que price seja número e tenha valor padrão
+              price: product.price ? Number(product.price) : 0
+            }))
+          );
+        }
+
+        // Filtrar por categoria 
+        const filteredProducts = productsJson
+          .filter((product: any) => 
+            product.category_id && product.category_id.toString() === categoryId
+          )
+          .map((product: any) => ({
+            ...product,
+            price: product.price ? Number(product.price) : 0
+          }));
+
+        setProducts(filteredProducts);
       } catch(error) {
-        console.error(error);
+        console.error('Erro ao carregar produtos:', error);
+        setError('Erro ao carregar produtos. Tente novamente.');
       } finally {
         setLoading(false);
       }
@@ -33,21 +63,38 @@ const CategoryProductsScreen = () => {
     fetchProducts();
   }, [categoryId]);
 
+  // Função segura para formatar preço
+  const formatPrice = (price?: number) => {
+    return price?.toFixed(2) ?? '0.00';
+  };
+
   if (loading) {
     return (
-      <View style={styles.container}>
-        <Text>Carregando produtos...</Text>
+      <View style={[styles.container, styles.center]}>
+        <ActivityIndicator size="large" color="#007AFF" />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={[styles.container, styles.center]}>
+        <Text style={styles.errorText}>{error}</Text>
+        <TouchableOpacity onPress={() => router.back()}>
+          <Text style={styles.retryText}>Voltar</Text>
+        </TouchableOpacity>
       </View>
     );
   }
 
   return (
     <ScrollView style={styles.container}>
-      <Link href="/(tabs)/homescreen" asChild>
-        <TouchableOpacity style={styles.backButton}>
-          <Text style={styles.backButtonText}>← Voltar</Text>
-        </TouchableOpacity>
-      </Link>
+      <TouchableOpacity 
+        style={styles.backButton}
+        onPress={() => router.back()}
+      >
+        <Text style={styles.backButtonText}>← Voltar</Text>
+      </TouchableOpacity>
 
       <Text style={styles.title}>Produtos: {categoryName}</Text>
 
@@ -55,10 +102,12 @@ const CategoryProductsScreen = () => {
         <Text style={styles.emptyMessage}>Nenhum produto encontrado nesta categoria</Text>
       ) : (
         products.map((product) => (
-          <TouchableOpacity key={product.id} style={styles.productItem}>
+          <View key={product.id} style={styles.productItem}>
             <Text style={styles.productName}>{product.name}</Text>
-            <Text style={styles.productPrice}>R$ {product.price.toFixed(2)}</Text>
-          </TouchableOpacity>
+            <Text style={styles.productPrice}>
+              R$ {formatPrice(product.price)}
+            </Text>
+          </View>
         ))
       )}
     </ScrollView>
@@ -109,6 +158,18 @@ const styles = StyleSheet.create({
     color: '#7f8c8d',
     marginTop: 20,
   },
+  center: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  errorText: {
+    color: '#e74c3c',
+    marginBottom: 10,
+  },
+  retryText: {
+    color: '#007AFF',
+    fontWeight: 'bold',
+  }
 });
 
 export default CategoryProductsScreen;
