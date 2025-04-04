@@ -22,34 +22,36 @@ const CategoryProductsScreen = () => {
       try {
         setLoading(true);
         const response = await fetch(
-          `http://192.168.8.91:14000/AppVendasApi/public/api/products`
+          `http://192.168.8.91:14000/AppVendasApi/public/api/products?category_id=${categoryId}`
         );
         let productsJson = await response.json();
 
-        // Debug: Verificar estrutura dos dados
+        
         console.log('Dados recebidos:', productsJson);
 
         // Se os produtos vierem dentro de marcas
-        if (productsJson[0]?.products) {
-          productsJson = productsJson.flatMap((brand: any) => 
-            brand.products.map((product: any) => ({
-              ...product,
-              brand_id: brand.id,
-              // Garantir que price seja número e tenha valor padrão
-              price: product.price ? Number(product.price) : 0
-            }))
-          );
-        }
+        // if (productsJson[0]?.products) {
+        //   productsJson = productsJson.flatMap((brand: any) => 
+        //     brand.products.map((product: any) => ({
+        //       ...product,
+        //       brand_id: brand.id,
+        //       // Garantir que price seja número 
+        //       price: product.price ? Number(product.price) : 0
+        //     }))
+        //   );
+        // }
 
         // Filtrar por categoria 
         const filteredProducts = productsJson
           .filter((product: any) => 
             product.category_id && product.category_id.toString() === categoryId
           )
-          .map((product: any) => ({
-            ...product,
-            price: product.price ? Number(product.price) : 0
-          }));
+
+        console.log(filteredProducts);
+          // .map((product: any) => ({
+          //   ...product,
+          //   price: product.price ? Number(product.price) : 0
+          // }));
 
         setProducts(filteredProducts);
       } catch(error) {

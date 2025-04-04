@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useRouter } from 'expo-router';
+import { Link } from 'expo-router';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
 
 type Category = {
