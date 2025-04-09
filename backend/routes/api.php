@@ -18,3 +18,6 @@ use Illuminate\Support\Facades\Route;
 
 Route::get("/products", [ProductController::class,"listar"]);
 Route::get("/categories", [CategoriesController::class,"listar"]);
+Route::post("/products", [ProductController::class,"cadastrar"]);
+Route::put("/products/{id}", [ProductController::class,"atualizar"]);
+Route::delete("/products/{id}", [ProductController::class,"deletar"]);

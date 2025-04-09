@@ -1,56 +1,70 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, TextInput, Image, TouchableOpacity, ScrollView, StyleSheet } from "react-native";
-import { Link } from 'expo-router';
-import ExploreScreen from "../ExploreScreen";
+import { View, Text, TextInput, Image, TouchableOpacity, ScrollView, StyleSheet, ActivityIndicator } from "react-native";
+import { Link, useRouter } from 'expo-router';
 
-
-// Dados completos das marcas
+// Tipagem completa dos dados
 type Brand = {
-  id: number,
-  name: string,
-  price: number,
+  id: number;
+  name: string;
+  price?: number;
+  category_id?: number;
+  brand_id?: number;
 }
 
-
 const HomeScreen = () => {
-  const [currentScreen, setCurrentScreen] = useState<"home" | "categories">("home");
-  const [selectedBrand, setSelectedBrand] = useState<any>(null);
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-
-  const handleBrandPress = (brand: any) => {
-    setSelectedBrand(brand);
-    setCurrentScreen("categories");
-  };
-
   const [brands, setBrands] = useState<Brand[]>([]);
 
   useEffect(() => {
-    
-    listarbrands();
-    
+    const fetchBrands = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch(
+          `${process.env.EXPO_PUBLIC_API_URL || 'http://192.168.8.91:14000'}/AppVendasApi/public/api/products`
+        );
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        setBrands(data);
+      } catch (error) {
+        console.error("Error fetching brands:", error);
+        setError("Não foi possível carregar as marcas. Tente novamente.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchBrands();
   }, []);
 
-  async function listarbrands() {
-    try {
-      const response = await fetch(
-        'http://192.168.8.91:14000/AppVendasApi/public/api/products',
-      );
-      const json = await response.json();
-      setBrands(json);
-    } catch(error) {
-      console.error(error)
-    }
-  };
-
-  console.log(brands);
-  
   // Filtra marcas baseado na busca
   const filteredBrands = brands.filter(brand =>
     brand.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  if (currentScreen === "categories" && selectedBrand) {
-    return <ExploreScreen brand={selectedBrand} onBack={() => setCurrentScreen("home")} />;
+  if (isLoading) {
+    return (
+      <View style={[styles.container, styles.center]}>
+        <ActivityIndicator size="large" color="#3498db" />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={[styles.container, styles.center]}>
+        <Text style={styles.errorText}>{error}</Text>
+        <TouchableOpacity onPress={() => router.back()}>
+          <Text style={styles.retryText}>Tentar novamente</Text>
+        </TouchableOpacity>
+      </View>
+    );
   }
 
   return (
@@ -73,41 +87,52 @@ const HomeScreen = () => {
       <Image
         source={{ uri: 'https://via.placeholder.com/300x150' }}
         style={styles.banner}
+        accessibilityLabel="Banner promocional"
       />
 
       {/* Botões principais */}
       <View style={styles.buttonRow}>
         <Link href="/(tabs)/categories" asChild>
-          <TouchableOpacity style={styles.primaryButton}>
-             <Text style={styles.buttonText1}>Categories</Text>
+          <TouchableOpacity 
+            style={styles.primaryButton}
+            accessibilityLabel="Ver categorias"
+          >
+            <Text style={styles.buttonText}>Categorias</Text>
           </TouchableOpacity>
-         </Link>
+        </Link>
         
-        <Link href="/+not-found" asChild>
-          <TouchableOpacity style={styles.secondaryButton}>
-            <Text style={styles.buttonText2}>Login</Text>
+        <Link href="/LoginScreen" asChild>
+          <TouchableOpacity 
+            style={styles.secondaryButton}
+            accessibilityLabel="Fazer login"
+          >
+            <Text style={styles.buttonText}>Login</Text>
           </TouchableOpacity>
-         </Link>
-
-    </View>
+        </Link>
+      </View>
 
       {/* Lista de marcas */}
       <Text style={styles.sectionTitle}>Nossas Marcas</Text>
       
-      <View style={styles.grid}>
-        {filteredBrands.map((brand) => (
-          <TouchableOpacity
-            key={brand.id}
-            style={styles.brandCard}
-            onPress={() => handleBrandPress(brand)}
-          >
-            <View style={styles.brandLogo}>
-              <Text style={styles.brandInitial}>{brand.name.charAt(0)}</Text>
-            </View>
-            <Text style={styles.brandName} numberOfLines={2}>{brand.name}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+      {filteredBrands.length === 0 ? (
+        <Text style={styles.emptyMessage}>Nenhuma marca encontrada</Text>
+      ) : (
+        <View style={styles.grid}>
+          {filteredBrands.map((brand) => (
+            <TouchableOpacity
+              key={brand.id}
+              style={styles.brandCard}
+              onPress={() => router.push(`/+not-found`)}
+              accessibilityLabel={`Marca ${brand.name}`}
+            >
+              <View style={styles.brandLogo}>
+                <Text style={styles.brandInitial}>{brand.name.charAt(0).toUpperCase()}</Text>
+              </View>
+              <Text style={styles.brandName} numberOfLines={2}>{brand.name}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
     </ScrollView>
   );
 };
@@ -155,36 +180,26 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 24,
   },
-  button: {
-    flex: 1,
-    padding: 10,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   primaryButton: {
+    flex: 1,
     backgroundColor: '#3498db',
     marginRight: 8,
-    borderRadius: 15
+    borderRadius: 15,
+    paddingVertical: 15,
+    alignItems: 'center',
   },
   secondaryButton: {
+    flex: 1,
     backgroundColor: '#7f8c8d',
     marginLeft: 8,
-    borderRadius: 15
+    borderRadius: 15,
+    paddingVertical: 15,
+    alignItems: 'center',
   },
-  buttonText1: {
+  buttonText: {
     color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,
-    paddingHorizontal: 53,
-    paddingVertical: 30,
-  },
-  buttonText2: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 16,
-    paddingHorizontal: 75,
-    paddingVertical: 30
   },
   sectionTitle: {
     fontSize: 20,
@@ -230,6 +245,24 @@ const styles = StyleSheet.create({
     color: '#34495e',
     textAlign: 'center',
   },
+  center: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  errorText: {
+    color: '#e74c3c',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  retryText: {
+    color: '#3498db',
+    fontWeight: 'bold',
+  },
+  emptyMessage: {
+    textAlign: 'center',
+    color: '#7f8c8d',
+    marginTop: 20,
+  }
 });
 
 export default HomeScreen;
