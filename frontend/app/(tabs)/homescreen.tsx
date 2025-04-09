@@ -101,7 +101,7 @@ const HomeScreen = () => {
           </TouchableOpacity>
         </Link>
         
-        <Link href="/+not-found" asChild>
+        <Link href="/LoginScreen" asChild>
           <TouchableOpacity 
             style={styles.secondaryButton}
             accessibilityLabel="Fazer login"

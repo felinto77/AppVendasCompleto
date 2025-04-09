@@ -25,9 +25,7 @@ const CategoryProductsScreen = () => {
           `http://192.168.8.91:14000/AppVendasApi/public/api/products?category_id=${categoryId}`
         );
         let productsJson = await response.json();
-
         
-        console.log('Dados recebidos:', productsJson);
 
         // Se os produtos vierem dentro de marcas
         // if (productsJson[0]?.products) {
