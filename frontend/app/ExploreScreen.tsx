@@ -40,6 +40,15 @@ const ExploreScreen: React.FC<ExploreScreenProps> = ({ brand, onBack }) => {
   );
 };
 
+
+
+
+
+
+
+
+
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,

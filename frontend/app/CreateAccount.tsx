@@ -4,6 +4,9 @@ import { Link, useRouter } from 'expo-router';
 
 const LoginScreen = () => {
   const router = useRouter();
+  const [name, setName] = useState("");
+  const [birthdate, setBirthDate] = useState("");
+  const [cpf, setCpf] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -15,7 +18,7 @@ const LoginScreen = () => {
       setError(null);
       
       // Validação simples
-      if (!email || !password) {
+      if (!name || !birthdate || !cpf || !email || !password) {
         throw new Error("Por favor, preencha todos os campos");
       }
 
@@ -26,11 +29,14 @@ const LoginScreen = () => {
       const response = await fetch(
         `${process.env.EXPO_PUBLIC_API_URL || 'http://192.168.8.91:14000'}/AppVendasApi/public/api/login`,
         {
-          method: 'GET',
+          method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
+            name,
+            birthdate,
+            cpf,
             email,
             password
           })
@@ -63,30 +69,56 @@ const LoginScreen = () => {
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         {/* Logo */}
         <View style={styles.header}>
-          <Image
-            source={{ uri: 'https://via.placeholder.com/150' }}
-            style={styles.logo}
-            accessibilityLabel="Logo SB Solutions"
-          />
-          <Text style={styles.title}>Bem-vindo de volta!</Text>
-          <Text style={styles.subtitle}>Faça login para continuar</Text>
+          <Text style={styles.title}>Bem-vindo ao SB Solutions!</Text>
+          <Text style={styles.subtitle}>Crie sua conta para continuar</Text>
         </View>
 
 
-
-
+        
 
         {/* Formulário */}
 
 
 
-        
+
         <View style={styles.form}>
           {error && (
             <View style={styles.errorContainer}>
               <Text style={styles.errorText}>{error}</Text>
             </View>
           )}
+
+          <TextInput
+            style={styles.input}
+            placeholder="Nome Completo"
+            placeholderTextColor="#999"
+            value={name}
+            onChangeText={setName}
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
+
+          <TextInput
+            style={styles.input}
+            placeholder="Data de Nascimento"
+            placeholderTextColor="#999"
+            value={birthdate}
+            onChangeText={setBirthDate}
+            keyboardType="number-pad"
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
+
+          <TextInput
+            style={styles.input}
+            placeholder="CPF"
+            placeholderTextColor="#999"
+            value={cpf}
+            onChangeText={setCpf}
+            keyboardType="number-pad"
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
 
           <TextInput
             style={styles.input}
@@ -117,36 +149,19 @@ const LoginScreen = () => {
             {isLoading ? (
               <ActivityIndicator color="#fff" />
             ) : (
-              <Text style={styles.buttonText}>Entrar</Text>
+              <Text style={styles.buttonText}>Criar Conta</Text>
             )}
           </TouchableOpacity>
 
-
-
-
-          {/* BOTÕES DE CONTA E SENHA */}
-
-
-
-
-          <View style={styles.linksContainer}>
-            <Link href="/ForgotPassword" asChild>
-              <TouchableOpacity>
-                <Text style={styles.linkText}>Esqueceu a senha?</Text>
-              </TouchableOpacity>
-            </Link>
-            
-            <Link href="/CreateAccount" asChild>
-              <TouchableOpacity>
-                <Text style={styles.linkText}>Criar nova conta</Text>
-              </TouchableOpacity>
-            </Link>
-          </View>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
 };
+
+
+
+
 
 
 
@@ -168,12 +183,6 @@ const styles = StyleSheet.create({
   header: {
     alignItems: 'center',
     marginBottom: 40,
-  },
-  logo: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    marginBottom: 20,
   },
   title: {
     fontSize: 24,
@@ -210,15 +219,6 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,
-  },
-  linksContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 20,
-  },
-  linkText: {
-    color: '#3498db',
-    fontWeight: '600',
   },
   errorContainer: {
     backgroundColor: '#fdecea',

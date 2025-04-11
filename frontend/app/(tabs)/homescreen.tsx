@@ -2,7 +2,12 @@ import React, { useEffect, useState } from "react";
 import { View, Text, TextInput, Image, TouchableOpacity, ScrollView, StyleSheet, ActivityIndicator } from "react-native";
 import { Link, useRouter } from 'expo-router';
 
-// Tipagem completa dos dados
+type Category = {
+  id: number;
+  name: string;
+  icon: string;
+}
+
 type Brand = {
   id: number;
   name: string;
@@ -10,6 +15,21 @@ type Brand = {
   category_id?: number;
   brand_id?: number;
 }
+
+const brandContainers = [
+  { id: 1, name: 'Pippos', color: '#e74c3c' },
+  { id: 2, name: 'Tuffit', color: '#3498db' },
+  { id: 3, name: 'Café São Braz', color: '#2ecc71' },
+  { id: 4, name: 'Café Blend 53', color: '#f39c12' },
+  { id: 5, name: 'Salgadinho Brazitos', color: '#9b59b6' },
+  { id: 6, name: 'Batata Scrush', color: '#1abc9c' },
+  { id: 7, name: 'GOSTOSIN', color: '#d35400' },
+  { id: 8, name: 'Torrada Torraditos', color: '#34495e' },
+  { id: 9, name: 'Achocolatado Powerlate', color: '#27ae60' },
+  { id: 10, name: 'Nordestino', color: '#e67e22' },
+  { id: 11, name: 'Novomilho', color: '#16a085' },
+  { id: 12, name: 'Cereal Gold Flakes', color: '#8e44ad' },
+];
 
 const HomeScreen = () => {
   const router = useRouter();
@@ -43,9 +63,9 @@ const HomeScreen = () => {
     fetchBrands();
   }, []);
 
-  // Filtra marcas baseado na busca
-  const filteredBrands = brands.filter(brand =>
-    brand.name.toLowerCase().includes(searchQuery.toLowerCase())
+  // Filtra containers baseado na busca
+  const filteredContainers = brandContainers.filter(container =>
+    container.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   if (isLoading) {
@@ -111,24 +131,23 @@ const HomeScreen = () => {
         </Link>
       </View>
 
-      {/* Lista de marcas */}
+      {/* Lista de marcas em grid 2 colunas */}
       <Text style={styles.sectionTitle}>Nossas Marcas</Text>
       
-      {filteredBrands.length === 0 ? (
+      {filteredContainers.length === 0 ? (
         <Text style={styles.emptyMessage}>Nenhuma marca encontrada</Text>
       ) : (
-        <View style={styles.grid}>
-          {filteredBrands.map((brand) => (
+        <View style={styles.gridContainer}>
+          {filteredContainers.map((container) => (
             <TouchableOpacity
-              key={brand.id}
-              style={styles.brandCard}
-              onPress={() => router.push(`/+not-found`)}
-              accessibilityLabel={`Marca ${brand.name}`}
+              key={container.id}
+              style={[styles.brandCard, { backgroundColor: container.color + '20', borderColor: container.color }]}
+              onPress={() => router.push(``)}  //FALTA O CAMINHO PARA OS PRODUTOS
             >
-              <View style={styles.brandLogo}>
-                <Text style={styles.brandInitial}>{brand.name.charAt(0).toUpperCase()}</Text>
+              <View style={[styles.brandLogo, { backgroundColor: container.color }]}>
+                <Text style={styles.brandInitial}>{container.name.charAt(0).toUpperCase()}</Text>
               </View>
-              <Text style={styles.brandName} numberOfLines={2}>{brand.name}</Text>
+              <Text style={[styles.brandName, { color: container.color }]} numberOfLines={2}>{container.name}</Text>
             </TouchableOpacity>
           ))}
         </View>
@@ -136,6 +155,15 @@ const HomeScreen = () => {
     </ScrollView>
   );
 };
+
+
+
+
+
+
+
+
+
 
 const styles = StyleSheet.create({
   container: {
@@ -207,29 +235,25 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     color: '#2c3e50',
   },
-  grid: {
+  gridContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
   },
   brandCard: {
     width: '48%',
-    backgroundColor: '#fff',
+    aspectRatio: 1,
     borderRadius: 12,
-    padding: 15,
+    borderWidth: 1,
     marginBottom: 16,
     alignItems: 'center',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
+    justifyContent: 'center',
+    padding: 10,
   },
   brandLogo: {
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: '#e74c3c',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 10,
@@ -242,7 +266,6 @@ const styles = StyleSheet.create({
   brandName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#34495e',
     textAlign: 'center',
   },
   center: {

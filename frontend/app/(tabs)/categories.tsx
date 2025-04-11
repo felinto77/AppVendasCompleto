@@ -98,6 +98,16 @@ const CategoriesScreen = ({ onBack }: { onBack: () => void }) => {
   );
 };
 
+
+
+
+
+
+
+
+
+
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
