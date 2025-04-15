@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoriesController;
 use App\Http\Controllers\ProductController;
 use Illuminate\Http\Request;
@@ -21,3 +22,9 @@ Route::get("/categories", [CategoriesController::class,"listar"]);
 Route::post("/products", [ProductController::class,"cadastrar"]);
 Route::put("/products/{id}", [ProductController::class,"atualizar"]);
 Route::delete("/products/{id}", [ProductController::class,"deletar"]);
+
+Route::post("/register", [AuthController::class,"register"]);
+Route::post("/login", [AuthController::class,"login"]);
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/listar', [App\Http\Controllers\AccountController::class, 'listar']);
+});

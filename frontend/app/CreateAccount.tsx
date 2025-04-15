@@ -27,20 +27,22 @@ const LoginScreen = () => {
 
       
       const response = await fetch(
-        `${process.env.EXPO_PUBLIC_API_URL || 'http://192.168.8.91:14000'}/AppVendasApi/public/api/login`,
-        {
-          method: 'POST',
-          headers: {
+        `${process.env.EXPO_PUBLIC_API_URL || 'http://127.0.0.1:8000'}/AppVendasApi/public/api/register`,
+    {
+        method: 'POST',
+        headers: {
             'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            name,
-            birthdate,
-            cpf,
-            email,
-            password
-          })
-        }
+            'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+            name: "Nome do Usuário",
+            birthdate: "01-01-1990", 
+            cpf: "123.456.789-00", 
+            email: "usuario@example.com",
+            password: "senhaSegura123",
+            password_confirmation: "senhaSegura123" // Adicionar confirmação
+        })
+    }
       );
 
       const data = await response.json();

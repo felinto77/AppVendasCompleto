@@ -24,7 +24,7 @@ const LoginScreen = () => {
 
       
       const response = await fetch(
-        `${process.env.EXPO_PUBLIC_API_URL || 'http://192.168.8.91:14000'}/AppVendasApi/public/api/login`,
+        `${process.env.EXPO_PUBLIC_API_URL || 'http://127.0.0.1:8000'}/api/login`,
         {
           method: 'GET',
           headers: {
