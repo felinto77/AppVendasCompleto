@@ -33,7 +33,7 @@ const ExploreScreen: React.FC<ExploreScreenProps> = ({ brand, onBack }) => {
           <View style={{ flex: 1 }}>
             <Text style={styles.productName}>{product.name}</Text>
           </View>
-          <Text style={styles.productPrice}>R$ {product.price.toFixed(2)}</Text>
+          <Text style={styles.productPrice}>R$ {formatPrice(product.price)}</Text>
         </TouchableOpacity>
       ))}
     </ScrollView>
@@ -43,7 +43,12 @@ const ExploreScreen: React.FC<ExploreScreenProps> = ({ brand, onBack }) => {
 
 
 
-
+const formatPrice = (price?: number) => {
+  return (price ?? 0).toLocaleString('pt-BR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+};
 
 
 

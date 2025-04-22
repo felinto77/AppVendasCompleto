@@ -26,7 +26,7 @@ const LoginScreen = () => {
       const response = await fetch(
         `${process.env.EXPO_PUBLIC_API_URL || 'http://127.0.0.1:8000'}/api/login`,
         {
-          method: 'GET',
+          method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },

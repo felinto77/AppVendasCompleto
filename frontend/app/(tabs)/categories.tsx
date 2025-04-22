@@ -25,8 +25,8 @@ const CategoriesScreen = ({ onBack }: { onBack: () => void }) => {
       try {
         // Busca categorias e produtos em paralelo
         const [categoriesRes, productsRes] = await Promise.all([
-          fetch('http://192.168.8.91:14000/AppVendasApi/public/api/categories'),
-          fetch('http://192.168.8.91:14000/AppVendasApi/public/api/products')
+          fetch('http://192.168.9.191/backend/public/api/categories'),
+          fetch('http://192.168.9.191/backend/public/api/products')
         ]);
         
         const categoriesJson = await categoriesRes.json();

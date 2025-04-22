@@ -1,12 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, TextInput, Image, TouchableOpacity, ScrollView, StyleSheet, ActivityIndicator } from "react-native";
-import { Link, useRouter } from 'expo-router';
+import { Link, useRouter,} from 'expo-router';
 
-type Category = {
-  id: number;
-  name: string;
-  icon: string;
-}
 
 type Brand = {
   id: number;
@@ -38,12 +33,13 @@ const HomeScreen = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [brands, setBrands] = useState<Brand[]>([]);
 
+
   useEffect(() => {
     const fetchBrands = async () => {
       try {
         setIsLoading(true);
         const response = await fetch(
-          `${process.env.EXPO_PUBLIC_API_URL || 'http://192.168.8.91:14000'}/AppVendasApi/public/api/products`
+          `${process.env.EXPO_PUBLIC_API_URL || 'http://192.168.9.191'}/backend/public/api/products`
         );
         
         if (!response.ok) {
