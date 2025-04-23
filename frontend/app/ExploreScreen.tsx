@@ -1,47 +1,100 @@
-import React from "react";
-import { ScrollView, Text, TouchableOpacity, View, StyleSheet } from "react-native";
-
+import React, { useEffect, useState } from "react";
+import { ScrollView, Text, TouchableOpacity, View, StyleSheet, ActivityIndicator } from "react-native";
+import { useLocalSearchParams, useRouter } from "expo-router";
 
 interface Product {
   id: number;
   name: string;
   price: number;
+  brand_id: number;
 }
 
-interface Brand {
-  id: number;
-  name: string;
-  products: Product[];
-}
+const ExploreScreen = () => {
+  const router = useRouter();
+  const params = useLocalSearchParams();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
 
-interface ExploreScreenProps {
-  brand: Brand;
-  onBack: () => void;
-}
+  // Extrai os parâmetros
+  const brandId = params.brandId ? parseInt(params.brandId as string) : null;
+  const brandName = params.brandName as string || 'Marca';
+  const brandColor = params.brandColor as string || '#4A90E2';
+  const productIds = params.productIds ? JSON.parse(params.productIds as string) as number[] : [];
+  
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        
+        
+        if (productIds.length > 0) {
+          const response = await fetch(
+            `http://192.168.9.191/backend/public/api/products?ids=${productIds.join(',')}`  
+          );
 
-const ExploreScreen: React.FC<ExploreScreenProps> = ({ brand, onBack }) => {
+          if (!response.ok) throw new Error(`Erro HTTP! status: ${response.status}`);
+          console.log(response);
+          const data = await response.json();
+          setProducts(data);
+        } 
+
+      } catch (error) {
+        console.error("Erro ao buscar produtos:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={brandColor} />
+      </View>
+    );
+  }
+
   return (
-    <ScrollView style={styles.container}>
-      <TouchableOpacity onPress={onBack} style={styles.backButton}>
-        <Text style={styles.backButtonText}>← Voltar para marcas</Text>
+    <ScrollView style={[styles.container, { backgroundColor: `${brandColor}10` }]}>
+      <TouchableOpacity 
+        onPress={() => router.back()} 
+        style={styles.backButton}
+      >
+        <Text style={[styles.backButtonText, { color: brandColor }]}>
+          ← Voltar para marcas
+        </Text>
       </TouchableOpacity>
 
-      <Text style={styles.brandTitle}>{brand.name}</Text>
+      <View style={[styles.header, { backgroundColor: brandColor }]}>
+        <Text style={styles.brandTitle}>{brandName}</Text>
+      </View>
 
-      {brand.products.map((product) => (
-        <TouchableOpacity key={product.id} style={styles.productItem}>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.productName}>{product.name}</Text>
-          </View>
-          <Text style={styles.productPrice}>R$ {formatPrice(product.price)}</Text>
-        </TouchableOpacity>
-      ))}
+      {products.length === 0 ? (
+        <Text style={styles.emptyMessage}>Nenhum produto encontrado nesta marca</Text>
+      ) : (
+        products.map((product) => (
+          <TouchableOpacity 
+            key={product.id} 
+            style={styles.productItem}
+            onPress={() => router.push({
+              pathname: "/",
+              params: { productId: product.id.toString() }
+            })}
+          >
+            <View style={{ flex: 1 }}>
+              <Text style={styles.productName}>{product.name}</Text>
+            </View>
+            <Text style={[styles.productPrice, { color: brandColor }]}>
+              R$ {formatPrice(product.price)}
+            </Text>
+          </TouchableOpacity>
+        ))
+      )}
     </ScrollView>
   );
 };
-
-
-
 
 const formatPrice = (price?: number) => {
   return (price ?? 0).toLocaleString('pt-BR', {
@@ -54,38 +107,47 @@ const formatPrice = (price?: number) => {
 
 
 
+
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
     padding: 16,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   backButton: {
     paddingVertical: 10,
     marginBottom: 15,
   },
   backButtonText: {
-    color: '#4A90E2',
     fontSize: 16,
     fontWeight: '600',
+  },
+  header: {
+    padding: 20,
+    borderRadius: 10,
+    marginBottom: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   brandTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 20,
-    textAlign: 'center',
-    color: '#333',
+    color: '#fff',
   },
   productItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 15,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: '#fff',
     borderRadius: 8,
     marginBottom: 10,
-    borderWidth: 1,
-    borderColor: '#eee',
+    elevation: 2,
   },
   productName: {
     fontSize: 16,
@@ -96,7 +158,12 @@ const styles = StyleSheet.create({
   productPrice: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#4A90E2',
+  },
+  emptyMessage: {
+    textAlign: 'center',
+    marginTop: 20,
+    fontSize: 16,
+    color: '#777',
   },
 });
 

@@ -1,29 +1,28 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, TextInput, Image, TouchableOpacity, ScrollView, StyleSheet, ActivityIndicator } from "react-native";
-import { Link, useRouter,} from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 
-
-type Brand = {
+type Product = {
   id: number;
   name: string;
-  price?: number;
-  category_id?: number;
-  brand_id?: number;
+  price: number;
+  category_id: number;
+  brand_id: number;
 }
 
-const brandContainers = [
-  { id: 1, name: 'Pippos', color: '#e74c3c' },
-  { id: 2, name: 'Tuffit', color: '#3498db' },
-  { id: 3, name: 'Café São Braz', color: '#2ecc71' },
-  { id: 4, name: 'Café Blend 53', color: '#f39c12' },
-  { id: 5, name: 'Salgadinho Brazitos', color: '#9b59b6' },
-  { id: 6, name: 'Batata Scrush', color: '#1abc9c' },
-  { id: 7, name: 'GOSTOSIN', color: '#d35400' },
-  { id: 8, name: 'Torrada Torraditos', color: '#34495e' },
-  { id: 9, name: 'Achocolatado Powerlate', color: '#27ae60' },
-  { id: 10, name: 'Nordestino', color: '#e67e22' },
-  { id: 11, name: 'Novomilho', color: '#16a085' },
-  { id: 12, name: 'Cereal Gold Flakes', color: '#8e44ad' },
+const BRAND_CONTAINERS = [
+  { id: 1, name: 'Pippos', color: '#e74c3c', icon: '🍪' },
+  { id: 2, name: 'Tuffit', color: '#3498db', icon: '🍪' },
+  { id: 3, name: 'Café São Braz', color: '#2ecc71', icon: '☕' },
+  { id: 4, name: 'Café Blend 53', color: '#f39c12', icon: '☕' },
+  { id: 5, name: 'Salgadinho Brazitos', color: '#9b59b6', icon: '🍿' },
+  { id: 6, name: 'Batata Scrush', color: '#1abc9c', icon: '🍟' },
+  { id: 7, name: 'GOSTOSIN', color: '#d35400', icon: '🍫' },
+  { id: 8, name: 'Torrada Torraditos', color: '#34495e', icon: '🍞' },
+  { id: 9, name: 'Achocolatado Powerlate', color: '#27ae60', icon: '🥤' },
+  { id: 10, name: 'Nordestino', color: '#e67e22', icon: '🌽' },
+  { id: 11, name: 'Novomilho', color: '#16a085', icon: '🌽' },
+  { id: 12, name: 'Cereal Gold Flakes', color: '#8e44ad', icon: '🥣' },
 ];
 
 const HomeScreen = () => {
@@ -31,38 +30,37 @@ const HomeScreen = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [brands, setBrands] = useState<Brand[]>([]);
-
+  const [products, setProducts] = useState<Product[]>([]);
 
   useEffect(() => {
-    const fetchBrands = async () => {
+    const fetchProducts = async () => {
       try {
         setIsLoading(true);
         const response = await fetch(
           `${process.env.EXPO_PUBLIC_API_URL || 'http://192.168.9.191'}/backend/public/api/products`
         );
         
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
         const data = await response.json();
-        setBrands(data);
+        setProducts(data);
       } catch (error) {
-        console.error("Error fetching brands:", error);
-        setError("Não foi possível carregar as marcas. Tente novamente.");
+        console.error("Erro ao buscar produtos:", error);
+        setError("Não foi possível carregar os produtos. Tente novamente.");
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchBrands();
+    fetchProducts();
   }, []);
 
-  // Filtra containers baseado na busca
-  const filteredContainers = brandContainers.filter(container =>
-    container.name.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredBrands = BRAND_CONTAINERS.filter(brand =>
+    brand.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const getProductsByBrand = (brandId: number) => {
+    console.log({products, brandId});
+    return products.filter(product => product.category_id === brandId);
+  };
 
   if (isLoading) {
     return (
@@ -76,7 +74,7 @@ const HomeScreen = () => {
     return (
       <View style={[styles.container, styles.center]}>
         <Text style={styles.errorText}>{error}</Text>
-        <TouchableOpacity onPress={() => router.back()}>
+        <TouchableOpacity onPress={() => window.location.reload()}>
           <Text style={styles.retryText}>Tentar novamente</Text>
         </TouchableOpacity>
       </View>
@@ -109,48 +107,77 @@ const HomeScreen = () => {
       {/* Botões principais */}
       <View style={styles.buttonRow}>
         <Link href="/(tabs)/categories" asChild>
-          <TouchableOpacity 
-            style={styles.primaryButton}
-            accessibilityLabel="Ver categorias"
-          >
+          <TouchableOpacity style={styles.primaryButton}>
             <Text style={styles.buttonText}>Categorias</Text>
           </TouchableOpacity>
         </Link>
         
         <Link href="/LoginScreen" asChild>
-          <TouchableOpacity 
-            style={styles.secondaryButton}
-            accessibilityLabel="Fazer login"
-          >
+          <TouchableOpacity style={styles.secondaryButton}>
             <Text style={styles.buttonText}>Login</Text>
           </TouchableOpacity>
         </Link>
       </View>
 
-      {/* Lista de marcas em grid 2 colunas */}
+      {/* Lista de marcas em grid */}
       <Text style={styles.sectionTitle}>Nossas Marcas</Text>
       
-      {filteredContainers.length === 0 ? (
+      {filteredBrands.length === 0 ? (
         <Text style={styles.emptyMessage}>Nenhuma marca encontrada</Text>
       ) : (
         <View style={styles.gridContainer}>
-          {filteredContainers.map((container) => (
-            <TouchableOpacity
-              key={container.id}
-              style={[styles.brandCard, { backgroundColor: container.color + '20', borderColor: container.color }]}
-              onPress={() => router.push(``)}  //FALTA O CAMINHO PARA OS PRODUTOS
-            >
-              <View style={[styles.brandLogo, { backgroundColor: container.color }]}>
-                <Text style={styles.brandInitial}>{container.name.charAt(0).toUpperCase()}</Text>
-              </View>
-              <Text style={[styles.brandName, { color: container.color }]} numberOfLines={2}>{container.name}</Text>
-            </TouchableOpacity>
-          ))}
+          {filteredBrands.map((brand) => {
+            const brandProducts = getProductsByBrand(brand.id);
+            console.log(brandProducts)
+            return (
+              <TouchableOpacity
+                key={brand.id}
+                style={[
+                  styles.brandCard, 
+                  { 
+                    backgroundColor: `${brand.color}20`, 
+                    borderColor: brand.color 
+                  }
+                ]}
+                onPress={() => router.push({
+                  pathname: "/ExploreScreen",
+                  params: { 
+                    brandId: brand.id.toString(),
+                    brandName: brand.name,
+                    brandColor: brand.color,
+                    productIds: JSON.stringify(brandProducts.map(p => p.id))
+                  }
+                })}
+              >
+                <Text style={[styles.brandIcon, { fontSize: 32 }]}>
+                  {brand.icon}
+                </Text>
+                <Text style={[styles.brandName, { color: brand.color }]}>
+                  {brand.name}
+                </Text>
+                <Text style={styles.productCount}>
+                  {brandProducts.length} {brandProducts.length === 1 ? 'produto' : 'produtos'}
+                </Text>
+                
+                {/* Lista rápida de 2 produtos (opcional) */}
+                {brandProducts.slice(0, 2).map(product => (
+                  <Text key={product.id} style={styles.productName}>
+                    • {product.name}
+                  </Text>
+                ))}
+                {brandProducts.length > 2 && (
+                  <Text style={styles.productName}>...</Text>
+                )}
+              </TouchableOpacity>
+            );
+          })}
         </View>
       )}
     </ScrollView>
   );
 };
+
+
 
 
 
@@ -238,31 +265,25 @@ const styles = StyleSheet.create({
   },
   brandCard: {
     width: '48%',
-    aspectRatio: 1,
     borderRadius: 12,
     borderWidth: 1,
     marginBottom: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 10,
+    padding: 16,
   },
-  brandLogo: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 10,
-  },
-  brandInitial: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#fff',
+  brandIcon: {
+    marginBottom: 8,
   },
   brandName: {
     fontSize: 16,
     fontWeight: '600',
     textAlign: 'center',
+    marginBottom: 4,
+  },
+  productCount: {
+    fontSize: 12,
+    color: '#666',
   },
   center: {
     justifyContent: 'center',
@@ -281,7 +302,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#7f8c8d',
     marginTop: 20,
-  }
+  },
+  productName: {
+    fontSize: 12,
+    color: '#333',
+    marginTop: 4,
+  },
 });
 
 export default HomeScreen;

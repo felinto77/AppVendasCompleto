@@ -27,30 +27,12 @@ const CategoryProductsScreen = () => {
         let productsJson = await response.json();
         
 
-        // Se os produtos vierem dentro de marcas
-        // if (productsJson[0]?.products) {
-        //   productsJson = productsJson.flatMap((brand: any) => 
-        //     brand.products.map((product: any) => ({
-        //       ...product,
-        //       brand_id: brand.id,
-        //       // Garantir que price seja número 
-        //       price: product.price ? Number(product.price) : 0
-        //     }))
-        //   );
-        // }
-
         // Filtrar por categoria 
         const filteredProducts = productsJson
           .filter((product: any) => 
             product.category_id && product.category_id.toString() === categoryId
           )
 
-
-          // console.log(filteredProducts);
-          // .map((product: any) => ({
-          //   ...product,
-          //   price: product.price ? Number(product.price) : 0
-          // }));
 
           
 
