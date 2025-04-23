@@ -22,22 +22,10 @@ const CategoryProductsScreen = () => {
       try {
         setLoading(true);
         const response = await fetch(
-          `http://192.168.8.91:14000/AppVendasApi/public/api/products?category_id=${categoryId}`
+          `http://192.168.9.191/backend/public/api/products?category_id=${categoryId}`
         );
         let productsJson = await response.json();
         
-
-        // Se os produtos vierem dentro de marcas
-        // if (productsJson[0]?.products) {
-        //   productsJson = productsJson.flatMap((brand: any) => 
-        //     brand.products.map((product: any) => ({
-        //       ...product,
-        //       brand_id: brand.id,
-        //       // Garantir que price seja número 
-        //       price: product.price ? Number(product.price) : 0
-        //     }))
-        //   );
-        // }
 
         // Filtrar por categoria 
         const filteredProducts = productsJson
@@ -45,11 +33,8 @@ const CategoryProductsScreen = () => {
             product.category_id && product.category_id.toString() === categoryId
           )
 
-        console.log(filteredProducts);
-          // .map((product: any) => ({
-          //   ...product,
-          //   price: product.price ? Number(product.price) : 0
-          // }));
+
+          
 
         setProducts(filteredProducts);
       } catch(error) {
@@ -63,9 +48,8 @@ const CategoryProductsScreen = () => {
     fetchProducts();
   }, [categoryId]);
 
-  // Função segura para formatar preço
   const formatPrice = (price?: number) => {
-    return price?.toFixed(2) ?? '0.00';
+    return (price ?? 0).toLocaleString('pt-BR', {minimumFractionDigits: 2,maximumFractionDigits: 2});
   };
 
   if (loading) {
@@ -113,6 +97,17 @@ const CategoryProductsScreen = () => {
     </ScrollView>
   );
 };
+
+
+
+
+
+
+
+
+
+
+
 
 const styles = StyleSheet.create({
   container: {

@@ -2,10 +2,11 @@ import React, { useState } from "react";
 import { View, Text, TextInput, Image, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator, KeyboardAvoidingView, Platform } from "react-native";
 import { Link, useRouter } from 'expo-router';
 
-const LoginScreen = () => {
+const PasswordScreen = () => {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [newpassword, setNewPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -15,7 +16,7 @@ const LoginScreen = () => {
       setError(null);
       
       // Validação simples
-      if (!email || !password) {
+      if ( !email || !newpassword || !password) {
         throw new Error("Por favor, preencha todos os campos");
       }
 
@@ -24,14 +25,15 @@ const LoginScreen = () => {
 
       
       const response = await fetch(
-        `${process.env.EXPO_PUBLIC_API_URL || 'http://127.0.0.1:8000'}/api/login`,
+        `${process.env.EXPO_PUBLIC_API_URL || 'http://192.168.8.91:14000'}/backend/public/api/login`,
         {
-          method: 'POST',
+          method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
             email,
+            newpassword,
             password
           })
         }
@@ -63,15 +65,9 @@ const LoginScreen = () => {
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         {/* Logo */}
         <View style={styles.header}>
-          <Image
-            source={{ uri: 'https://via.placeholder.com/150' }}
-            style={styles.logo}
-            accessibilityLabel="Logo SB Solutions"
-          />
-          <Text style={styles.title}>Bem-vindo de volta!</Text>
-          <Text style={styles.subtitle}>Faça login para continuar</Text>
+          <Text style={styles.title}>Esqueceu sua senha?</Text>
+          <Text style={styles.subtitle}>Altere sua senha!</Text>
         </View>
-
 
 
 
@@ -80,7 +76,7 @@ const LoginScreen = () => {
 
 
 
-        
+
         <View style={styles.form}>
           {error && (
             <View style={styles.errorContainer}>
@@ -97,7 +93,7 @@ const LoginScreen = () => {
             keyboardType="email-address"
             autoCapitalize="none"
             autoCorrect={false}
-          />
+         />
 
           <TextInput
             style={styles.input}
@@ -105,6 +101,16 @@ const LoginScreen = () => {
             placeholderTextColor="#999"
             value={password}
             onChangeText={setPassword}
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
+
+          <TextInput
+            style={styles.input}
+            placeholder="Nova Senha"
+            placeholderTextColor="#999"
+            value={newpassword}
+            onChangeText={setNewPassword}
             secureTextEntry
             autoCapitalize="none"
           />
@@ -117,36 +123,18 @@ const LoginScreen = () => {
             {isLoading ? (
               <ActivityIndicator color="#fff" />
             ) : (
-              <Text style={styles.buttonText}>Entrar</Text>
+              <Text style={styles.buttonText}>Mudar Senha</Text>
             )}
           </TouchableOpacity>
 
-
-
-
-          {/* BOTÕES DE CONTA E SENHA */}
-
-
-
-
-          <View style={styles.linksContainer}>
-            <Link href="/ForgotPassword" asChild>
-              <TouchableOpacity>
-                <Text style={styles.linkText}>Esqueceu a senha?</Text>
-              </TouchableOpacity>
-            </Link>
-            
-            <Link href="/CreateAccount" asChild>
-              <TouchableOpacity>
-                <Text style={styles.linkText}>Criar nova conta</Text>
-              </TouchableOpacity>
-            </Link>
-          </View>
+          
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
 };
+
+
 
 
 
@@ -169,12 +157,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 40,
   },
-  logo: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    marginBottom: 20,
-  },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
@@ -184,6 +166,7 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 16,
     color: '#7f8c8d',
+    marginBottom: 10,
   },
   form: {
     width: '100%',
@@ -211,15 +194,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 16,
   },
-  linksContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 20,
-  },
-  linkText: {
-    color: '#3498db',
-    fontWeight: '600',
-  },
   errorContainer: {
     backgroundColor: '#fdecea',
     padding: 12,
@@ -232,4 +206,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default LoginScreen;
+export default PasswordScreen;

@@ -22,7 +22,7 @@ const EstoqueScreen = () => {
   async function listarProdutos() {
     try {
       const response = await fetch(
-        'http://192.168.8.91:14000/AppVendasApi/public/api/products'
+        'http://192.168.9.191/backend/public/api/products'
       );
       
       if (!response.ok) {
@@ -104,13 +104,26 @@ const EstoqueScreen = () => {
           >
             <Text style={styles.productName} numberOfLines={2}>{product.name}</Text>
             <Text style={styles.brandName} numberOfLines={1}>{product.brand_name}</Text>
-            <Text style={styles.productPrice}>R$ {product.price.toFixed(2)}</Text>
+            <Text style={styles.productPrice}>R$ {(Math.round(Number(product.price || 0) * 100) / 100).toLocaleString('pt-BR', {minimumFractionDigits: 2,maximumFractionDigits: 2})}</Text>
           </TouchableOpacity>
         ))}
       </View>
     </ScrollView>
   );
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 const styles = StyleSheet.create({
